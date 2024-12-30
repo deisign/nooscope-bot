@@ -17,8 +17,9 @@ logging.basicConfig(
 async def generate_paradox():
     prompt = "Сгенерируй философский парадокс на тему технологий и сознания."
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
+        # Новый метод `openai.ChatCompletion.acreate` для асинхронного вызова
+        response = await openai.ChatCompletion.acreate(
+            model="gpt-3.5-turbo",  # Или gpt-4, если доступно
             messages=[
                 {"role": "system", "content": "Ты генератор философских парадоксов."},
                 {"role": "user", "content": prompt}
