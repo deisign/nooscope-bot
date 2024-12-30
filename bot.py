@@ -42,12 +42,8 @@ async def paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Основная функция
 def main():
-    application = ApplicationBuilder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
+    app = ApplicationBuilder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("paradox", paradox))
-
-    application.run_polling()
-
-if __name__ == "__main__":
-    main()
+    # Добавляем команды
+    app.add_handler(CommandHandler("start", start))
+    
