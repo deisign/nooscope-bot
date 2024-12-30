@@ -3,7 +3,6 @@ import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import openai
-import asyncio
 
 # Настройки OpenAI API из переменных окружения
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -18,17 +17,14 @@ logging.basicConfig(
 async def generate_paradox():
     prompt = "Сгенерируй философский парадокс на тему технологий и сознания."
     try:
-        # Новый метод для асинхронного вызова OpenAI API
-        response = await openai.ChatCompletion.acreate(
-            model="gpt-3.5-turbo",  # Или gpt-4, если доступно
-            messages=[
-                {"role": "system", "content": "Ты генератор философских парадоксов."},
-                {"role": "user", "content": prompt}
-            ],
+        # Метод для версии openai==0.28
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
             max_tokens=100,
             temperature=0.7
         )
-        return response['choices'][0]['message']['content'].strip()
+        return response['choices'][0]['text'].strip()
     except Exception as e:
         logging.error(f"Ошибка при вызове OpenAI API: {e}")
         return "Не удалось сгенерировать парадокс."
@@ -39,14 +35,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Команда /paradox
 async def paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Сразу отвечаем Telegram, чтобы избежать таймаута
-    await update.message.reply_text("Пожалуйста, подождите, я генерирую парадокс...")
-    
-    # Асинхронно выполняем генерацию парадокса
-    asyncio.create_task(send_paradox(update, context))
-
-# Асинхронная обработка генерации парадокса
-async def send_paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         paradox_text = await generate_paradox()
         await update.message.reply_text(f"Парадокс дня:\n\n{paradox_text}")
@@ -56,20 +44,19 @@ async def send_paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Основная функция
 def main():
-    # Создание приложения Telegram
     app = ApplicationBuilder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
 
-    # Добавляем обработчики команд
+    # Добавляем команды
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("paradox", paradox))
 
     # Настройка Webhook
-    port = int(os.environ.get("PORT", 8443))  # Порт из переменных окружения
+    port = int(os.environ.get("PORT", 8443))
     app.run_webhook(
-        listen="0.0.0.0",  # Слушать на всех интерфейсах
-        port=port,  # Порт, указанный в Render
-        url_path=os.getenv("TELEGRAM_BOT_TOKEN"),  # Путь для Webhook
-        webhook_url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{os.getenv('TELEGRAM_BOT_TOKEN')}"  # Полный URL для Telegram Webhook
+        listen="0.0.0.0",
+        port=port,
+        url_path=os.getenv("TELEGRAM_BOT_TOKEN"),
+        webhook_url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{os.getenv('TELEGRAM_BOT_TOKEN')}"
     )
 
 if __name__ == "__main__":
