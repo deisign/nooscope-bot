@@ -3,6 +3,7 @@ import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import openai
+import asyncio
 
 # Настройки OpenAI API из переменных окружения
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -17,7 +18,7 @@ logging.basicConfig(
 async def generate_paradox():
     prompt = "Сгенерируй философский парадокс на тему технологий и сознания."
     try:
-        # Новый метод `openai.ChatCompletion.acreate` для асинхронного вызова
+        # Новый метод для асинхронного вызова OpenAI API
         response = await openai.ChatCompletion.acreate(
             model="gpt-3.5-turbo",  # Или gpt-4, если доступно
             messages=[
@@ -38,6 +39,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Команда /paradox
 async def paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Сразу отвечаем Telegram, чтобы избежать таймаута
+    await update.message.reply_text("Пожалуйста, подождите, я генерирую парадокс...")
+    
+    # Асинхронно выполняем генерацию парадокса
+    asyncio.create_task(send_paradox(update, context))
+
+# Асинхронная обработка генерации парадокса
+async def send_paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         paradox_text = await generate_paradox()
         await update.message.reply_text(f"Парадокс дня:\n\n{paradox_text}")
