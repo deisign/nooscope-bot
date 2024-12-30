@@ -16,16 +16,20 @@ logging.basicConfig(
 # Генерация парадокса
 async def generate_paradox():
     prompt = "Сгенерируй философский парадокс на тему технологий и сознания."
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "Ты генератор философских парадоксов."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=100,
-        temperature=0.7
-    )
-    return response['choices'][0]['message']['content'].strip()
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Ты генератор философских парадоксов."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=100,
+            temperature=0.7
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        logging.error(f"Ошибка при вызове OpenAI API: {e}")
+        return "Не удалось сгенерировать парадокс."
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
