@@ -1,10 +1,10 @@
 import logging
-import os  # Новый импорт для работы с переменными окружения
+import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import openai
 
-# Настройки OpenAI API из переменной окружения
+# Настройки OpenAI API из переменных окружения
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Логирование
@@ -16,13 +16,16 @@ logging.basicConfig(
 # Генерация парадокса
 async def generate_paradox():
     prompt = "Сгенерируй философский парадокс на тему технологий и сознания."
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Ты генератор философских парадоксов."},
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=100,
         temperature=0.7
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content'].strip()
 
 # Команда /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -30,8 +33,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Команда /paradox
 async def paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    paradox_text = await generate_paradox()
-    await update.message.reply_text(f"Парадокс дня:\n\n{paradox_text}")
+    try:
+        paradox_text = await generate_paradox()
+        await update.message.reply_text(f"Парадокс дня:\n\n{paradox_text}")
+    except Exception as e:
+        logging.error(f"Ошибка при генерации парадокса: {e}")
+        await update.message.reply_text("Произошла ошибка при генерации парадокса. Попробуйте позже.")
 
 # Основная функция
 def main():
