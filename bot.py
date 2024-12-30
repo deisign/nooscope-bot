@@ -42,8 +42,21 @@ async def paradox(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Основная функция
 def main():
+    # Создание приложения Telegram
     app = ApplicationBuilder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
 
-    # Добавляем команды
+    # Добавляем обработчики команд
     app.add_handler(CommandHandler("start", start))
-    
+    app.add_handler(CommandHandler("paradox", paradox))
+
+    # Настройка Webhook
+    port = int(os.environ.get("PORT", 8443))  # Порт из переменных окружения
+    app.run_webhook(
+        listen="0.0.0.0",  # Слушать на всех интерфейсах
+        port=port,  # Порт, указанный в Render
+        url_path=os.getenv("TELEGRAM_BOT_TOKEN"),  # Путь для Webhook
+        webhook_url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/{os.getenv('TELEGRAM_BOT_TOKEN')}"  # Полный URL для Telegram Webhook
+    )
+
+if __name__ == "__main__":
+    main()
