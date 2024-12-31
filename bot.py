@@ -4,7 +4,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from dotenv import load_dotenv
 import openai
 import logging
-from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +14,7 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-PORT = int(os.getenv("PORT", 8080))  # Используем порт 8080 для теста
+PORT = int(os.getenv("PORT", 8443))
 
 # Настройка OpenAI API
 openai.api_key = OPENAI_API_KEY
@@ -48,14 +47,14 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("paradox", generate_paradox))
 
 if __name__ == "__main__":
-    # Тестовый HTTP-сервер для проверки порта
-    class TestHandler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b"Test server is running")
-
-    # Запуск тестового сервера на порту 8080
-    server = HTTPServer(("0.0.0.0", PORT), TestHandler)
-    logger.info(f"Тестовый сервер запущен на порту {PORT}")
-    server.serve_forever()
+    logger.info("Бот запускается...")
+    try:
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=TELEGRAM_BOT_TOKEN,
+            webhook_url=f"https://172.236.3.175/{TELEGRAM_BOT_TOKEN}"
+        )
+        logger.info(f"Вебхук запущен на порту {PORT}")
+    except Exception as e:
+        logger.error(f"Ошибка при запуске вебхука: {e}")
