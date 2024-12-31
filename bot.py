@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Загрузить переменные из окружения
+# Загрузка переменных окружения
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -48,9 +48,12 @@ app.add_handler(CommandHandler("paradox", generate_paradox))
 
 if __name__ == "__main__":
     logger.info("Бот запускается...")
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        url_path=TELEGRAM_BOT_TOKEN,
-        webhook_url=f"https://172.236.3.175/{TELEGRAM_BOT_TOKEN}"
-    )
+    try:
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=TELEGRAM_BOT_TOKEN,
+            webhook_url=f"https://172.236.3.175/{TELEGRAM_BOT_TOKEN}"
+        )
+    except Exception as e:
+        logger.error(f"Ошибка при запуске вебхука: {e}")
