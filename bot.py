@@ -55,5 +55,6 @@ if __name__ == "__main__":
             url_path=TELEGRAM_BOT_TOKEN,
             webhook_url=f"https://172.236.3.175/{TELEGRAM_BOT_TOKEN}"
         )
+        logger.info(f"Вебхук запущен на порту {PORT}")
     except Exception as e:
         logger.error(f"Ошибка при запуске вебхука: {e}")
